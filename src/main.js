@@ -8,6 +8,11 @@ import VueCarousel from 'vue-carousel'
 import VueCookie from 'vue-cookie'
 import Vuex from 'vuex'
 import axios from 'axios'
+import BootstrapVue from 'bootstrap-vue'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+import { format, formatDistance, formatRelative, subDays } from 'date-fns'
+// import 'custom.scss'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faCoffee, faBars, faTimes } from '@fortawesome/free-solid-svg-icons'
@@ -19,37 +24,65 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.use(Vuex)
 Vue.use(VueCarousel)
 Vue.use(VueCookie)
+Vue.use(BootstrapVue)
+Vue.use(format, formatDistance, formatRelative, subDays)
 // Vue.use(axios)
 
-document.addEventListener('DOMContentLoaded', function () {
-  let domainCheck = window.location.host
-  let apiAddr = null
+const domainCheck = window.location.host
+const apiAddr = domainCheck.indexOf('localhost') !== -1 ? 'http://localhost:8080' : 'http://rest.bangshinchul.com:9000'
 
-  if (domainCheck.indexOf('localhost') !== -1) {
-    apiAddr = 'http://localhost:9000'
-  } else {
-    apiAddr = 'http://rest.bangshinchul.com:9000'
-  }
+axios.defaults.baseURL = domainCheck.indexOf('localhost') !== -1 ? 'http://localhost:8080' : 'http://rest.bangshinchul.com:9000'
+axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
+Vue.config.productionTip = true
 
-  const store = new Vuex.Store({
-    state: {
-      // 변수
-      loginMessage: '',
-      myId: '',
-      apiAddr: apiAddr
-    },
-    mutations: { // 메서드
+const store = new Vuex.Store({
+  state: { // 변수
+    accessToken: null, // jwt token
+    loginMessage: '',
+    username: '',
+    apiAddr: apiAddr
+  },
+  getters: {
+    doLoginCheck: (state) => {
+      // alert(`LOGIN_CHECK -> ${state.accessToken}`)
+      if (state.accessToken) {
+        // alert(`LOGIN_CHECK TRUE`)
+        return true
+      } else {
+        // alert(`LOGIN_CHECK FALSE`)
+        return false
+      }
     }
-  })
+  },
+  mutations: { // 메서드
+    LOGIN (state, {accessToken, username}) {
+      console.log(`mutations LOGIN ${accessToken} / ${username}`)
+      // alert(`LOGIN -> ${accessToken} / ${username}`)
+      state.accessToken = accessToken
+      state.username = username
+      axios.defaults.headers.common['Authorization'] = accessToken
+    },
+    LOGOUT (state) {
+      state.accessToken = null
+      state.username = null
+    }
+  },
+  actions: {
+    doLogout (context) {
+      context.commit('LOGOUT')
+    },
+    setLoginInfo (context, {accessToken, username}) {
+      // alert(`set login info -> ${accessToken} / ${username}`)
+      context.commit('LOGIN', {accessToken, username})
+    }
+  }
+})
 
-  Vue.config.productionTip = true
-
-  /* eslint-disable no-new */
-  new Vue({
-    el: '#app',
-    router,
-    store,
-    components: { App },
-    template: '<App/>'
-  })
+// eslint-disable-next-line no-new
+new Vue({
+  el: '#app',
+  router,
+  store,
+  components: { App },
+  template: '<App/>'
 })

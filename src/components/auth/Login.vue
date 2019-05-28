@@ -31,16 +31,18 @@
     <input id="userId" type="text" placeholder="ID" v-model="idVal" required>
     <input id="password" type="password" placeholder="Password" v-model="pwdVal" required>
     <div class="btn-section">
-      <button v-on:click="doLogin">Login</button>
-      <button v-on:click="getAccount">Sign up</button>
+      <b-button v-on:click="doLogin">Login</b-button>
+      <b-button v-on:click="getAccount">Sign up</b-button>
     </div>
   </div>
 </template>
 
 <script>
+/* eslint-disable */
 /* eslint-disable no-unused-expressions,no-sequences,eqeqeq,key-spacing,no-trailing-spaces,no-unused-vars */
 
 import axios from 'axios'
+import authUtils from '../../middleware/authUtils.js'
 
 export default {
   name: 'Login',
@@ -182,35 +184,41 @@ export default {
     doLogin: function () {
       let result = this.validation()
       if (result) {
-        let postData = {
-          userId : this.idVal,
-          userPassword : this.pwdVal
-        }
+        
+        const basicToken = 'Basic ' + authUtils.getBasicToken(this.idVal, this.pwdVal)
+        console.log(`doLogin : ${basicToken}`);
+        
+        // this.$store.dispatch('doLogin', {username: this.idVal, password: this.pwdVal}).then(() => {
+        //   this.$parent.$emit('LoginSuccess', true)
+        // })
 
-        axios.post(this.apiAddr + '/account/doLogin', postData).then(res => {
-          console.log('response param data : ')
-          console.log(res)
-
+        axios.get(
+          '/auth/login', 
+          { headers: { Authorization: basicToken } }
+        ).then(res => {
+          console.log(res);
+          // alert('axios complete')
           if (res.status !== 200) {
             this.validation_code = 'has_error'
+            // alert(`login error!\nstatusCode: ${res.status}\nmessage: ${res.statusText}`)
+          } else {
+            // alert('axios complete 200')
+            const token = res.headers.authorization
+            this.$store.dispatch('setLoginInfo', {accessToken: token, username: this.idVal}).then(() => {
+              // const loginCheckResult = this.$store.dispatch('doLoginCheck')
+              const loginCheckResult = this.$store.getters.doLoginCheck
+              // alert(`loginCheckResult : ${JSON.stringify(loginCheckResult)}`)
+              if (loginCheckResult) {
+                this.$parent.$emit('LoginSuccess')
+              } else {
+                // alert('loginCheck Error!')
+              }
+            })
           }
-
-          if (res.data === '0000') {
-            // 회원정보 있을 떄
-            this.$store.state.myId = this.idVal
-
-            // 로그인 데이터 쿠키 저장
-            this.$cookie.set('userId', this.idVal, 3) // userId라는 키값으로 아이디를 3시간동안 쿠키 저장
-            console.log('cookie 저장 : ' + this.$cookie.get('userId'))
-            this.$parent.$emit('LoginSuccess', true)
-          } else if (res.data === '0001') {
-            // 회원정보 없거나 비밀번호가 맞지 않을 때
-            this.validation_code = 'not_find_account'
-          } else if (res.data === '0002') {
-            this.validation_code = 'has_error_redis'
-          } else if (res.data === '0003') {
-            this.validation_code = 'password_wrong'
-          }
+        }).catch(function (error) {
+          // handle error
+          console.log('error : ', error)
+          // alert(error);
         })
       }
     },
@@ -272,6 +280,7 @@ export default {
     padding: 10px 40px;
     border: none;
     background-color: white;
+    color: #e0a243;
   }
   .btn-section > button:hover{
     background-color: #e0a243;

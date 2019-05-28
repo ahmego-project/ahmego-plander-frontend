@@ -3,7 +3,8 @@ import Router from 'vue-router'
 import Main from '@/pages/Main'
 import Home from '@/pages/Home'
 import ApiTest from '@/pages/ApiTest'
-import SignUp from '@/components/auth/SignUp'
+import BeforeSignUp from '@/pages/auth/BeforeSignUp'
+import SignUp from '@/pages/auth/SignUp'
 
 Vue.use(Router)
 
@@ -29,6 +30,27 @@ export default new Router({
       path: '/SignUp',
       name: 'SignUp',
       component: SignUp
+    },
+    {
+      path: '/BeforeSignUp',
+      name: 'BeforeSignUp',
+      component: BeforeSignUp
     }
   ]
 })
+
+// router.beforeEach((to, from, next) => {
+//   // redirect to login page if not logged in and trying to access a restricted page
+//   const publicPages = ['/login'];
+//   const authRequired = !publicPages.includes(to.path);
+//   const loggedIn = localStorage.getItem('user');
+
+//   if (authRequired && !loggedIn) {
+//     return next({
+//       path: '/login',
+//       query: { returnUrl: to.path }
+//     });
+//   }
+
+//   next();
+// })

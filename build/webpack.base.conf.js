@@ -74,6 +74,15 @@ module.exports = {
           limit: 10000,
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
         }
+      },
+      {
+        test: /\.js$/,
+        include: [
+          // Use `include` vs `exclude` to whitelist vs blacklist
+          path.resolve(__dirname, 'src'), // Whitelist your app source files
+          require.resolve('bootstrap-vue') // Whitelist bootstrap-vue
+        ],
+        loader: 'babel-loader'
       }
     ]
   },

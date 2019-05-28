@@ -1,6 +1,7 @@
 <template>
   <div class="app">
-    <hello-carousel></hello-carousel>
+    <!-- <hello-carousel></hello-carousel> -->
+    <h1>미용인들의 친구,<br>아미고!</h1>
     <login></login>
   </div>
 </template>
@@ -24,23 +25,24 @@ export default {
     }
   },
   created () {
-    this.$on('LoginSuccess', function (data) {
-      this.isLogin = data
-      window.location.href = '/home'
+    this.$on('LoginSuccess', function () {
+      // window.location.href = '/home'
+      this.$router.push('/home')
     })
   },
   mounted () {
     console.log('api address : ' + this.$store.state.apiAddr)
-    this.loginCheck() // 현재 로그인상태인지 체크
-  },
-  methods: {
-    loginCheck: function () {
-      this.isLogin = this.$cookie.get('userId') // 로그인한 계정의 쿠키 데이터가 있는지 가져옴
-      if (this.isLogin) {
-        console.log('로그인된 상태입니다.\nuserId cookie : ' + this.isLogin)
-        window.location.href = '/home'
+    // 현재 로그인상태인지 체크
+    const loginCheck = this.$store.getters.doLoginCheck
+    if (loginCheck) {
+      if (loginCheck) {
+        alert(`환영합니다! ${this.$store.state.username}님!`)
+        // window.location.href = '/home'
+        this.$router.push('/home')
       }
     }
+  },
+  methods: {
   }
 }
 </script>
